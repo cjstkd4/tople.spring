@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="spring.4t.moim">
+<!-- 사용자 정보 -->
+	<!-- 사용자 정보 입력 -->
+	<insert id="insertUser" parameterType="moimUser">
+		insert into moim_user values(
+			#{id}, 
+			#{moim}, 
+			#{fav}
+			<!-- 테스트용 속성 -->
+			, 
+			#{name}, 
+			#{gender}, 
+			#{birth}, 
+			#{loca}, 
+			#{prof}, 
+			#{thumb})
+	</insert>
+	
+	<!-- 사용자 정보 수정 -->
+	<update id="updateUser" parameterType="moimUser">
+		update moim_user set moim = #{moim},
+			fav = #{fav}
+			<!-- 테스트용 속성 -->
+			,
+			name = #{name},
+			gender = #{gender},
+			birth = #{birth},
+			loca = #{loca},
+			prof = #{prof},
+			thumb = #{thumb}
+			where id = #{id}
+	</update>
+	
+	<!-- 회원 탈퇴 -->
+	<delete id="deleteUser" parameterType="String">
+		delete from moim_user where id = #{id}
+	</delete>
+	
+	<!-- 사용자 정보 조회 -->
+	<select id="selectUser" parameterType="String" resultType="moimUser">
+		select * from moim_user where id = #{id}
+	</select>
+	
+<!-- 모임 멤버 -->
+	<insert id="insertMem" parameterType="moimMem">
+		insert into moimmem values(
+			#{id}, 
+			#{moimcode}, 
+			#{fav},
+			#{permit})
+	</insert>
+	
+	<update id="updateMem" parameterType="moimMem">
+		update moimmem set fav = #{fav}, permit = #{permit} where id = #{id} and moimcode = #{moimcode}
+	</update>
+	
+	<!-- 아이디 탈퇴 -->
+	<delete id="deleteUserMem" parameterType="String">
+		delete from moimmem where id = #{id}
+	</delete>
+	
+	<!-- 모임 탈퇴 -->
+	<delete id="deleteMem" parameterType="moimMem">
+		delete from moimmem where id = #{id} and moimcode = #{moimcode}
+	</delete>
+	
+	<!-- 모임 내 사용자 id 리스트 조회 -->
+	<select id="selectMoimMem" parameterType="int" resultType="moimMem">
+		select * from moimmem where moimcode = #{moimcode}
+	</select>
+	
+	<!-- 사용자가 가입한 모임 리스트 조회 -->
+	<select id="selectUserMoimList" parameterType="String" resultType="moimMem">
+		select * from moimmem where id = #{id}
+	</select>
+
+<!-- 게시판 -->
+	<!-- 게시글 등록 -->
+	<insert id="insertBoard" parameterType="boardList">
+		insert into boardlist values(
+			board_seq.nextval,
+			#{id},
+			#{moimcode},
+			#{subject},
+			#{content},
+			#{filename},
+			#{thumb},
+			sysdate,
+			#{lev})
+	</insert>
+	
+	<!-- 글 수정 -->
+	<update id="updateBoard" parameterType="boardList">
+		update boardlist set subject = #{subject},
+			content = #{content},
+			filename = #{filename},
+			thumb = #{thumb},
+			editdate = sysdate,
+			lev = #{lev}
+			where listnum = #{listnum}
+	</update>
+	
+	<!-- 글 삭제 -->
+		<!-- 특정 글 삭제 -->
+	<delete id="deleteBoard" parameterType="int">
+		delete from boardlist where listnum = #{listnum}
+	</delete>
+	
+		<!-- 모임 글 전부 삭제 -->
+	<delete id="deleteBoardList" parameterType="int">
+		delete from boardlist where moimcode = #{moimcode}
+	</delete>
+	
+	<!-- 글 조회 -->
+		<!-- 글 분류에 따른 모임 내의 글 전체 조회 -->
+	<select id="selectBoardList" parameterType="map" resultType="boardList">
+		select * from boardlist where moimcode = #{moimcode} and lev = #{lev}
+		order by listnum desc
+	</select>
+	
+		<!-- 모임 내 필독 글 조회 -->
+	<select id="selectBoardFeel" parameterType="int" resultType="boardList">
+		select * from boardlist where moimcode = #{moimcode} and lev = 1
+	</select>
+	
+		<!-- 모임 내 일반 게시글 조회 -->
+	<select id="selectBoardNomal" parameterType="int" resultType="boardList">
+		select * from boardlist where moimcode = #{moimcode} and lev = 2
+	</select>
+	
+		<!-- 글 상세 조회 -->
+	<select id="selectBoard" parameterType="int" resultType="boardList">
+		select * from boardlist where listnum = #{listnum}
+	</select>
+	
+<!-- 덧 글 -->
+	<!-- 덧글 작성 -->
+	<insert id="insertReDat" parameterType="reDat">
+		insert into redat values(
+			re_seq.nextval,
+			#{listnum},
+			#{id},
+			#{moimcode},
+			#{reple},
+			sysdate)
+	</insert>
+	
+	<!-- 덧 글 수정 -->
+	<update id="updateReDat" parameterType="reDat">
+		update redat set reple = #{reple}, resate = sysdate where renum = #{renum}
+	</update>
+	
+	<!-- 덧 글 삭제 -->
+		<!-- 원 글 삭제에 따른 덧 글 삭제 -->
+	<delete id="deleteBoardReDat" parameterType="int">
+		delete from redat where listnum = #{listnum}
+	</delete>
+	
+		<!-- 모임 삭제에 따른 덧 글 삭제  -->
+	<delete id="deleteMoimRedat" parameterType="int">
+		delete from redat where moimcode = #{moimcode}
+	</delete>
+	
+		<!-- 단일 덧 글 삭제 -->
+	<delete id="deleteRedat" parameterType="int">
+		delete from redat where renum = #{renum}
+	</delete>
+	
+	<!-- 덧 글 조회 -->
+		<!-- 단일 덧 글 조회 -->
+	<select id="selectRedat" parameterType="int" resultType="reDat">
+		select * from redat where renum = #{renum}
+	</select>
+	
+		<!-- 원 글에 따른 덧 글 리스트 -->
+	<select id="selectReDatList" parameterType="int" resultType="reDat">
+		select * from redat where listnum = #{listnum}
+	</select>
+	
+<!-- 일정 -->	
+	<!-- 일정 입력 -->
+	<insert id="insertSchedule" parameterType="schedule">
+		insert into schedule values(
+			sche_seq.nextval,
+			#{moimcode},
+			#{year},
+			#{month},
+			#{day},
+			#{time},
+			#{title},
+			#{sub},
+			#{join},
+			#{lat},
+			#{lot})
+	</insert>
+	
+	<!-- 일정 수정 -->
+	<update id="updateSchedule" parameterType="schedule">
+		update schedule set year = #{year},
+			month = #{month},
+			day = #{day},
+			time = #{time},
+			title = #{title},
+			sub = #{sub},
+			join = #{join},
+			lat = #{lat},
+			lot = #{lot}
+			where schnum = #{schnum}
+	</update>
+	
+	<!-- 일정 삭제 -->
+		<!-- 모임 일정 전체 삭제 -->
+	<delete id="deleteMoimSchedule" parameterType="int">
+		delete from schedule where moimcode = #{moimcode}
+	</delete>
+		<!-- 단일 일정 삭제 -->
+	<delete id="deleteSchedule" parameterType="int">
+		delete from schedule where schnum = #{schnum}
+	</delete>
+	
+	<!-- 일정 조회 -->
+		<!-- 모임 내 전체 일정 조회 -->
+	<select id="selectMoimSchedule" parameterType="int" resultType="schedule">
+		select * from schedule where moimcode = #{moimcode}
+		order by year desc, month desc, day desc, time desc
+	</select>
+	
+		<!-- 월간 일정 조회 -->
+	<select id="selectScheduleMonth" parameterType="map" resultType="schedule">
+		select * from schedule where year = #{year} and month = #{month}
+	</select>
+	
+		<!-- 단일 일정 조회 -->
+	<select id="selectSchedule" parameterType="int" resultType="schedule">
+		select * from schedule where schnum = #{schnum}
+	</select>
+	
+<!-- 할 일 -->
+	<!-- 할 일 입력 -->	
+	<insert id="insertToDo" parameterType="toDo">
+		insert into todo values(
+			#{schnum},
+			#{id},
+			#{ex},
+			#{flag})
+	</insert>
+	
+	<!-- 할 일 수정 -->
+	<update id="updateToDo" parameterType="toDo">
+		update todo set ex = ${ex}, flag = #{flag} where id = #{id} and schnum = #{schnum}
+	</update>
+	
+	<!-- 할 일 삭제 -->
+		<!-- 모임 삭제에 따른 할 일 삭제 -->
+	<delete id="deleteMoimToDo" parameterType="int">
+		delete from todo where moimcode = #{moimcode}
+	</delete>
+	
+		<!-- 일정 삭제에 따른 할 일 삭제 -->
+	<delete id="deleteScheduleToDo" parameterType="int">
+		delete from todo where schnum = #{schnum}
+	</delete>
+	
+		<!-- id에 부과된 할 일 삭제 -->
+	<delete id="deleteUserToDo" parameterType="String">
+		delete from todo where id = #{id}
+	</delete>
+	
+	<!-- 할 일 조회 -->
+		<!-- 일정에 해당하는 할 일 조회 -->
+	<select id="selectScheduleToDo" parameterType="int" resultType="toDo">
+		select * from todo where schnum = #{schnum}
+	</select>
+	
+		<!-- 사용자 id에 따른 일정별 할 일 조회 -->
+	<select id="selectUserToDo" parameterType="map" resultType="toDo">
+		select * from todo where id = #{id} and schnum = #{schnum}
+	</select>
+	
+<!-- 회비 -->
+	<!-- 회비 입력 -->	
+	<insert id="insertMoney" parameterType="money">
+		insert into money values(
+			#{schnum},
+			#{id},
+			#{amount},
+			#{flag})
+	</insert>
+	
+	<!-- 회비 수정 -->
+	<update id="updateMoney" parameterType="money">
+		update money set amount = #{amount}, flag = #{flag} where id = #{id} and schnum = #{schnum}
+	</update>
+	
+	<!-- 회비 삭제 -->
+		<!-- 모임 삭제에 따른 회비 삭제 -->
+	<delete id="deleteMoimMoney" parameterType="int">
+		delete from money where moimcode = #{moimcode}
+	</delete>
+	
+		<!-- 일정 삭제에 따른 회비 삭제 -->
+	<delete id="deleteScheduleMoney" parameterType="int">
+		delete from money where schnum = #{schnum}
+	</delete>
+	
+		<!-- id에 부과된 회비 삭제 -->
+	<delete id="deleteUserMoney" parameterType="String">
+		delete from money where id = #{id}
+	</delete>
+	
+	<!-- 회비 조회 -->
+		<!-- 일정에 해당하는 회비 조회 -->
+	<select id="selectScheduleMoney" parameterType="int" resultType="money">
+		select * from money where schnum = #{schnum}
+	</select>
+	
+		<!-- 사용자 id에 따른 해당 일정 회비 조회 -->
+	<select id="selectUserMoney" parameterType="String" resultType="money">
+		select * from money where id = #{id}
+	</select>
+	
+<!-- 모임 생성 -->	
+	<!-- 모임 생성 -->
+	<insert id="createMoim" parameterType="map">
+		create table ${tname} (
+		    moimcode number primary key,
+		    loca varchar2(100),
+		    moimname varchar2(1000),
+		    prod varchar2(4000),
+		    pic varchar2(500),
+		    color varchar2(100)
+		)
+	</insert>
+	
+	<!-- 모임 삭제 -->
+	<delete id="dropMoim" parameterType="map">
+		drop table #{tname} purge
+	</delete>
+	
+	<!-- 모임 테이블 생성 확인 -->
+	<select id="selectTnameCount" parameterType="String" resultType="int">
+		select count(*) as count from tab where tname = upper(#{tname})
+	</select>
+	
+<!-- 모임 -->	
+	<!-- 모임 정보 입력 -->
+	<insert id="insertMoim" parameterType="map">
+		insert into ${tname} values(
+			moim_seq.nextval,
+			#{moim.loca},
+			#{moim.moimname},
+			#{moim.prod},
+			#{moim.pic},
+			#{moim.color})
+	</insert>
+	
+	<!-- 모임 정보 수정 -->
+	<update id="updateMoim" parameterType="map">
+		update ${tname} set loca = #{moim.loca},
+			moimname = #{moim.moimname},
+			prod = #{moim.prod},
+			pic = #{moim.pic},
+			color = #{moim.color}
+	</update>
+	
+	<!-- 모임 테이블 명으로 모임코드 조회 -->
+	<select id="selectMoimCode" parameterType="map" resultType="int">
+		select moimcode from ${tname}
+	</select>
+	
+	<!-- 모임 테이블명으로 배너파일 이름 얻기 -->
+	<select id="selectMoimPic" parameterType="map" resultType="String">
+		select pic from ${tname}
+	</select>
+	
+	<!-- 모임 정보 조회 -->
+	<select id="selectMoim" parameterType="map" resultType="moim">
+		select * from ${tname}
+	</select>
+	
+	<!-- 모임 정보 및 가입 인원 수 -->
+	<select id="selectMoimNCount" parameterType="String" resultType="moim">
+		select ${tname}.*, (select count(id) from moimmem where moimcode = ${tname}.moimcode) as count from ${tname}
+	</select>
+	
+<!-- 모임 이름 테이블 -->
+	<!-- 입력 -->
+	<insert id="insertTname" parameterType="moimTname">
+		insert into moimtname values(#{moimcode}, #{tname})
+	</insert>
+	
+	<!-- 삭제 -->	
+	<delete id="deleteTname" parameterType="int">
+		delete from moimtname where moimcode = #{moimcode}
+	</delete>
+	
+	<!-- 모임 테이블명 조회 -->
+	<select id="selectTname" parameterType="int" resultType="String">
+		select tname from moimtname where moimcode = #{moimcode}
+	</select>
+	
+<!-- 마지막 모임 테이블명 조회 -->
+	<select id="selectLastTname" resultType="String">
+		select tname from moimtname where moimcode = (select max(moimcode) from moimtname)
+	</select>
+</mapper>
